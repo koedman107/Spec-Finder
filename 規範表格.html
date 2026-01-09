@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公路路線設計規範 - 圖片查詢系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .img-container {
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        details > summary {
+            list-style: none;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-900 font-sans">
+
+    <!-- 頂部導覽列 -->
+    <nav class="bg-slate-900 text-white p-5 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold tracking-wider">公路路線設計規範</h1>
+                <p class="text-xs text-slate-400 mt-1">112年6月修訂版 · 圖表快速索引</p>
+            </div>
+            <button onclick="handleBack()" id="back-btn" class="hidden text-sm bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-full transition-all shadow-md">
+                返回首頁索引
+            </button>
+        </div>
+    </nav>
+
+    <main class="container mx-auto py-10 px-4">
+        
+        <!-- 首頁：標題與圖片索引 -->
+        <div id="home-view" class="max-w-5xl mx-auto">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-4">圖表索引目錄</h2>
+                <div class="h-1 w-20 bg-blue-600 mx-auto rounded-full"></div>
+            </div>
+
+            <!-- 搜尋功能區域 -->
+            <div class="mb-8 max-w-xl mx-auto relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <input type="text" id="search-input" oninput="handleSearch()" placeholder="輸入關鍵字搜尋表格（如：視距、超高、3.4...）" 
+                    class="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm shadow-sm transition-all">
+                <div id="search-status" class="mt-2 text-xs text-slate-500 text-center hidden">
+                    正在顯示搜尋結果...
+                </div>
+            </div>
+
+            <div id="accordion-container" class="space-y-4">
+                <!-- 由 JS 根據章節動態生成收折清單 -->
+            </div>
+            
+            <!-- 無搜尋結果提示 -->
+            <div id="no-results" class="hidden text-center py-20">
+                <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-slate-900">找不到相符的表格</h3>
+                <p class="mt-1 text-sm text-slate-500">請嘗試更換關鍵字重新搜尋。</p>
+            </div>
+        </div>
+
+        <!-- 圖片顯示頁 -->
+        <div id="detail-view" class="hidden animate-fadeIn">
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-white p-4 rounded-t-xl border-x border-t border-slate-200 flex items-center justify-between">
+                    <h2 id="view-title" class="text-xl font-bold text-slate-800"></h2>
+                    <span class="text-xs text-slate-500 italic">點擊圖片可放大查看</span>
+                </div>
+                <div class="bg-slate-200 border border-slate-300 rounded-b-xl overflow-hidden img-container flex justify-center items-center min-h-[400px]">
+                    <img id="display-img" src="" alt="規範圖表" class="max-w-full shadow-2xl cursor-zoom-in" onclick="window.open(this.src)">
+                </div>
+                
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <strong>操作提示：</strong> 若圖片顯示不完整，您可以直接點擊圖片開啟原始檔案，或使用瀏覽器縮放功能查看細節。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="py-10 text-center text-slate-400 text-sm">
+        交通部頒布 · 中華民國112年6月
+    </footer>
+
+    <script>
+        const sections = [
+            {
+                name: "第一章 總則",
+                items: [
+                    { id: "1.4.1", title: "公路等級與設計速率" },
+                    { id: "1.5.1", title: "設計車種各部尺寸" }
+                ]
+            },
+            {
+                name: "第二章 橫斷面",
+                items: [
+                    { id: "2.2.1", title: "設計速率與每車道寬" },
+                    { id: "2.3.1", title: "公路等級與路肩寬最小寬度" },
+                    { id: "2.6.1", title: "公路等級與鋪面種類" },
+                    { id: "2.6.2", title: "鋪面種類與路拱" }
+                ]
+            },
+            {
+                name: "第三章 設計要素",
+                items: [
+                    { id: "3.1", title: "平均行駛速率" },
+                    { id: "3.2", title: "橫向摩擦係數 fs" },
+                    { id: "3.3.1.1", title: "最短停車視距" },
+                    { id: "3.3.1.2", title: "最短超車視距" },
+                    { id: "3.3.1.3", title: "最短應變視距" },
+                    { id: "3.3.2", title: "視點及目標物高度" },
+                    { id: "3.4", title: "平曲線最小半徑" },
+                    { id: "3.5.1", title: "最大超高率 emax" },
+                    { id: "3.5.3.1", title: "主線及匝環道超高率（正常路拱 1.5%時）" },
+                    { id: "3.5.3.2", title: "主線及匝環道超高率（正常路拱 2.0%時）" },
+                    { id: "3.5.3.3", title: "公路通過市區超高率（正常路拱 1.5%時）" },
+                    { id: "3.5.3.4", title: "公路通過市區超高率（正常路拱 2.0%時）" },
+                    { id: "3.5.4", title: "最大超高漸變率" },
+                    { id: "3.5.6", title: "免設超高曲線半徑" },
+                    { id: "3.6.2", title: "免設緩和曲線半徑" },
+                    { id: "3.8.1.1", title: "同向曲線最短長度" },
+                    { id: "3.8.1.2", title: "複曲線每一圓曲線段最短長度" },
+                    { id: "3.9.1", title: "車輛尺寸係數" },
+                    { id: "3.9.2", title: "車道加寬對照表（單一車道寬=3.0M）" },
+                    { id: "3.9.3", title: "車道加寬對照表（單一車道寬=3.25M）" },
+                    { id: "3.9.4", title: "車道加寬對照表（單一車道寬=3.50M）" },
+                    { id: "3.9.5", title: "車道加寬對照表（單一車道寬=3.65M）" },
+                    { id: "3.10.2", title: "最大縱坡度" },
+                    { id: "3.10.3.3", title: "縱坡長度限制" },
+                    { id: "3.12", title: "合成坡度" },
+                    { id: "3.13", title: "豎曲線最短長度" }
+                ]
+            },
+            {
+                name: "第四章 交叉處與交流道",
+                items: [
+                    { id: "4.2.9.1", title: "轉向彎道最小超高率" },
+                    { id: "4.2.9.2", title: "轉向彎道圓曲線最短長度" },
+                    { id: "4.2.9.3", title: "轉向彎道分匯流區橫向坡差" },
+                    { id: "4.2.9.4", title: "轉向彎道設計交通狀況" },
+                    { id: "4.2.9.5", title: "轉向彎道最小全寬" },
+                    { id: "4.2.10.1", title: "減速車道寬度漸變比例" },
+                    { id: "4.2.10.2", title: "最短減速長度" },
+                    { id: "4.2.12.1", title: "環形交叉設計速率" },
+                    { id: "4.2.12.2", title: "環形交叉交織距離" },
+                    { id: "4.2.12.3", title: "環形交叉橫坡差" },
+                    { id: "4.2.12.4", title: "環形交叉最小半徑" },
+                    { id: "4.2.12.5", title: "環形交叉環行車道全寬" },
+                    { id: "4.3.2.1", title: "立體交叉之匝道分匯流區主線最大縱坡度" },
+                    { id: "4.3.2.2", title: "立體交叉之匝道分匯流區主線最大超高率與平曲線最小半徑" },
+                    { id: "4.3.6.1", title: "匝道縱坡度" },
+                    { id: "4.3.6.2", title: "匝道行車道最小寬度" },
+                    { id: "4.3.8.1", title: "減速長度" },
+                    { id: "4.3.8.2", title: "平行式減速車道" },
+                    { id: "4.3.8.3", title: "直接式減速車道" },
+                    { id: "4.3.8.4", title: "加速長度" },
+                    { id: "4.3.8.5", title: "變速長度坡度修正係數" },
+                    { id: "4.3.9", title: "連續匝道鼻端最小距離" }
+                ]
+            }
+        ];
+
+        function renderAccordion(searchTerm = "") {
+            const container = document.getElementById('accordion-container');
+            const noResults = document.getElementById('no-results');
+            const searchStatus = document.getElementById('search-status');
+            const isSearching = searchTerm.trim() !== "";
+            
+            let totalMatchCount = 0;
+
+            const html = sections.map(section => {
+                // 篩選項目
+                const filteredItems = section.items.filter(item => 
+                    item.id.includes(searchTerm) || 
+                    item.title.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+
+                if (filteredItems.length === 0) return "";
+
+                totalMatchCount += filteredItems.length;
+
+                // 如果正在搜尋，則細節預設開啟
+                const isOpen = isSearching ? "open" : "";
+
+                return `
+                    <details class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm group" ${isOpen}>
+                        <summary class="flex justify-between items-center p-5 cursor-pointer hover:bg-slate-50 transition-colors">
+                            <span class="text-lg font-bold text-slate-700">${section.name}</span>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs text-slate-400 font-medium">${filteredItems.length} 個圖表</span>
+                                <svg class="w-5 h-5 text-slate-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </summary>
+                        <div class="p-4 bg-slate-50 border-t border-slate-100">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
+                                ${filteredItems.map(img => {
+                                    // 高亮顯示關鍵字 (可選)
+                                    return `
+                                    <div onclick="navigateToImage('表/表${img.id}.png', '表 ${img.id} - ${img.title}')" 
+                                         class="bg-white p-3 rounded-md border border-slate-200 shadow-sm hover:border-blue-400 cursor-pointer transition-all flex items-center justify-between group/item">
+                                        <div class="truncate mr-2">
+                                            <span class="text-blue-600 font-mono text-xs font-bold block mb-0.5">表 ${img.id}</span>
+                                            <h3 class="text-sm font-semibold text-slate-700 truncate" title="${img.title}">${img.title}</h3>
+                                        </div>
+                                        <svg class="w-4 h-4 text-slate-300 group-hover/item:text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </div>
+                                `}).join('')}
+                            </div>
+                        </div>
+                    </details>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+            
+            // 處理查無結果的顯示
+            if (totalMatchCount === 0 && isSearching) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+
+            // 更新搜尋狀態文字
+            if (isSearching) {
+                searchStatus.innerText = `搜尋到 ${totalMatchCount} 個符合的圖表`;
+                searchStatus.classList.remove('hidden');
+            } else {
+                searchStatus.classList.add('hidden');
+            }
+        }
+
+        // 搜尋輸入處理
+        function handleSearch() {
+            const searchTerm = document.getElementById('search-input').value;
+            renderAccordion(searchTerm);
+        }
+
+        function navigateToImage(fileName, title) {
+            history.pushState({ view: 'detail', fileName: fileName, title: title }, "");
+            updateUI('detail', fileName, title);
+        }
+
+        function updateUI(view, fileName = "", title = "") {
+            const homeView = document.getElementById('home-view');
+            const detailView = document.getElementById('detail-view');
+            const backBtn = document.getElementById('back-btn');
+            const imgElement = document.getElementById('display-img');
+            const titleElement = document.getElementById('view-title');
+
+            if (view === 'detail') {
+                imgElement.src = fileName;
+                imgElement.onerror = function() {
+                    this.src = "https://placehold.co/800x600?text=圖片檔案不存在%5Cn" + encodeURIComponent(fileName);
+                };
+                titleElement.innerText = title;
+
+                homeView.classList.add('hidden');
+                detailView.classList.remove('hidden');
+                backBtn.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            } else {
+                homeView.classList.remove('hidden');
+                detailView.classList.add('hidden');
+                backBtn.classList.add('hidden');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function handleBack() {
+            history.back();
+        }
+
+        window.onpopstate = function(event) {
+            if (event.state && event.state.view === 'detail') {
+                updateUI('detail', event.state.fileName, event.state.title);
+            } else {
+                updateUI('home');
+            }
+        };
+
+        // 初始化
+        renderAccordion();
+        history.replaceState({ view: 'home' }, "");
+    </script>
+</body>
+</html>
