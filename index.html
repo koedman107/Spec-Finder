@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>公路路線設計規範 - 圖片查詢系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -17,29 +17,26 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        details > summary {
-            list-style: none;
-        }
-        details > summary::-webkit-details-marker {
-            display: none;
-        }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
 
         /* --- 縮放與導引線核心樣式 --- */
         #img-wrapper {
             position: relative;
             cursor: crosshair;
-            overflow: hidden; /* 確保圖片放大後不會超出容器 */
-            touch-action: none; /* 防止行動裝置預設行為 */
+            overflow: hidden;
+            touch-action: none; /* 禁用預設行為以支援雙指縮放 */
         }
         #display-img {
-            transition: transform 0.1s ease-out;
+            transition: transform 0.05s linear;
             transform-origin: center center;
             user-select: none;
             -webkit-user-drag: none;
+            pointer-events: none; /* 由容器統一處理事件 */
         }
         .guide-line {
             position: absolute;
-            background-color: rgba(239, 68, 68, 0.7); /* 明亮的半透明紅 */
+            background-color: rgba(239, 68, 68, 0.7);
             pointer-events: none;
             display: none;
             z-index: 100;
@@ -58,12 +55,12 @@
                 <p class="text-xs text-slate-400 mt-1">112年6月修訂版 · 圖表快速索引</p>
             </div>
             <button onclick="handleBack()" id="back-btn" class="hidden text-sm bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-full transition-all shadow-md">
-                返回首頁索引
+                返回
             </button>
         </div>
     </nav>
 
-    <main class="container mx-auto py-10 px-4">
+    <main class="container mx-auto py-6 px-4">
         
         <div id="home-view" class="max-w-5xl mx-auto">
             <div class="text-center mb-8">
@@ -88,31 +85,25 @@
 
         <div id="detail-view" class="hidden animate-fadeIn">
             <div class="max-w-6xl mx-auto">
-                <div class="bg-white p-4 rounded-t-xl border-x border-t border-slate-200 flex items-center justify-between">
-                    <h2 id="view-title" class="text-lg font-bold text-slate-800"></h2>
-                    <div class="flex gap-2">
-                        <button onclick="resetZoom()" class="text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded transition-colors">重設檢視</button>
-                    </div>
+                <div class="bg-white p-4 rounded-t-xl border-x border-t flex items-center justify-between">
+                    <h2 id="view-title" class="text-sm md:text-lg font-bold text-slate-800 truncate mr-2"></h2>
+                    <button onclick="resetZoom()" class="flex-shrink-0 text-xs bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded transition-colors">重設檢視</button>
                 </div>
                 
-                <div id="img-wrapper" class="bg-slate-200 border border-slate-300 rounded-b-xl img-container flex justify-center items-center min-h-[550px]">
+                <div id="img-wrapper" class="bg-slate-200 border border-slate-300 rounded-b-xl img-container flex justify-center items-center min-h-[450px] md:min-h-[600px]">
                     <div id="guide-h" class="guide-line guide-h"></div>
                     <div id="guide-v" class="guide-line guide-v"></div>
                     <img id="display-img" src="" alt="規範圖表" class="max-w-full shadow-2xl">
                 </div>
                 
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-3 bg-white border rounded-lg shadow-sm flex items-start gap-3">
-                        <span class="bg-blue-100 text-blue-600 p-1 rounded">🖱️</span>
-                        <p class="text-xs text-slate-600"><strong>縮放：</strong>捲動滑鼠滾輪可放大或縮小圖片內容。</p>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600 bg-white p-4 rounded-lg border">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">📱</span>
+                        <p><strong>手機：</strong>雙指開合縮放，單指滑動移動，長按圖片切換對照線。</p>
                     </div>
-                    <div class="p-3 bg-white border rounded-lg shadow-sm flex items-start gap-3">
-                        <span class="bg-blue-100 text-blue-600 p-1 rounded">🤚</span>
-                        <p class="text-xs text-slate-600"><strong>移動：</strong>按住滑鼠左鍵並拖曳，可移動放大後的圖片。</p>
-                    </div>
-                    <div class="p-3 bg-white border rounded-lg shadow-sm flex items-start gap-3">
-                        <span class="bg-blue-100 text-blue-600 p-1 rounded">🎯</span>
-                        <p class="text-xs text-slate-600"><strong>對照：</strong>紅色十字線隨滑鼠移動；雙擊可隱藏線條。</p>
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">💻</span>
+                        <p><strong>電腦：</strong>滑鼠滾輪縮放，左鍵按住拖曳，雙擊圖片切換對照線。</p>
                     </div>
                 </div>
             </div>
@@ -125,40 +116,112 @@
     </footer>
 
     <script>
-        // --- 資料定義 ---
+        // --- 完整資料庫 ---
         const sections = [
-            { name: "第一章 總則", items: [{ id: "1.4.1", title: "公路等級與設計速率" }, { id: "1.5.1", title: "設計車種各部尺寸" }] },
-            { name: "第二章 橫斷面", items: [{ id: "2.2.1", title: "設計速率與每車道寬" }, { id: "2.3.1", title: "公路等級與路肩寬最小寬度" }, { id: "2.6.1", title: "公路等級與鋪面種類" }, { id: "2.6.2", title: "鋪面種類與路拱" }] },
-            { name: "第三章 設計要素", items: [{ id: "3.1", title: "平均行駛速率" }, { id: "3.2", title: "橫向摩擦係數 fs" }, { id: "3.3.1.1", title: "最短停車視距" }, { id: "3.3.1.2", title: "最短超車視距" }, { id: "3.3.1.3", title: "最短應變視距" }, { id: "3.3.2", title: "視點及目標物高度" }, { id: "3.4", title: "平曲線最小半徑" }, { id: "3.5.1", title: "最大超高率 emax" }, { id: "3.5.3.1", title: "主線及匝環道超高率（1.5%）" }, { id: "3.5.3.2", title: "主線及匝環道超高率（2.0%）" }, { id: "3.5.3.3", title: "市區超高率（1.5%）" }, { id: "3.5.3.4", title: "市區超高率（2.0%）" }, { id: "3.5.4", title: "最大超高漸變率" }, { id: "3.5.6", title: "免設超高曲線半徑" }, { id: "3.6.2", title: "免設緩和曲線半徑" }, { id: "3.8.1.1", title: "同向曲線最短長度" }, { id: "3.8.1.2", title: "複曲線每一圓曲線段最短長度" }, { id: "3.9.1", title: "車輛尺寸係數" }, { id: "3.9.2", title: "車道加寬表 (3.0M)" }, { id: "3.9.3", title: "車道加寬表 (3.25M)" }, { id: "3.9.4", title: "車道加寬表 (3.50M)" }, { id: "3.9.5", title: "車道加寬表 (3.65M)" }, { id: "3.10.2", title: "最大縱坡度" }, { id: "3.10.3.3", title: "縱坡長度限制" }, { id: "3.12", title: "合成坡度" }, { id: "3.13", title: "豎曲線最短長度" }] },
-            { name: "第四章 交叉處與交流道", items: [{ id: "4.2.9.1", title: "轉向彎道最小超高率" }, { id: "4.2.9.2", title: "轉向彎道圓曲線最短長度" }, { id: "4.2.10.2", title: "最短減速長度" }, { id: "4.3.6.1", title: "匝道縱坡度" }, { id: "4.3.8.1", title: "減速長度" }, { id: "4.3.8.4", title: "加速長度" }] }
+            {
+                name: "第一章 總則",
+                items: [
+                    { id: "1.4.1", title: "公路等級與設計速率" },
+                    { id: "1.5.1", title: "設計車種各部尺寸" }
+                ]
+            },
+            {
+                name: "第二章 橫斷面",
+                items: [
+                    { id: "2.2.1", title: "設計速率與每車道寬" },
+                    { id: "2.3.1", title: "公路等級與路肩寬最小寬度" },
+                    { id: "2.6.1", title: "公路等級與鋪面種類" },
+                    { id: "2.6.2", title: "鋪面種類與路拱" }
+                ]
+            },
+            {
+                name: "第三章 設計要素",
+                items: [
+                    { id: "3.1", title: "平均行駛速率" },
+                    { id: "3.2", title: "橫向摩擦係數 fs" },
+                    { id: "3.3.1.1", title: "最短停車視距" },
+                    { id: "3.3.1.2", title: "最短超車視距" },
+                    { id: "3.3.1.3", title: "最短應變視距" },
+                    { id: "3.3.2", title: "視點及目標物高度" },
+                    { id: "3.4", title: "平曲線最小半徑" },
+                    { id: "3.5.1", title: "最大超高率 emax" },
+                    { id: "3.5.3.1", title: "主線及匝環道超高率（正常路拱 1.5%時）" },
+                    { id: "3.5.3.2", title: "主線及匝環道超高率（正常路拱 2.0%時）" },
+                    { id: "3.5.3.3", title: "公路通過市區超高率（正常路拱 1.5%時）" },
+                    { id: "3.5.3.4", title: "公路通過市區超高率（正常路拱 2.0%時）" },
+                    { id: "3.5.4", title: "最大超高漸變率" },
+                    { id: "3.5.6", title: "免設超高曲線半徑" },
+                    { id: "3.6.2", title: "免設緩和曲線半徑" },
+                    { id: "3.8.1.1", title: "同向曲線最短長度" },
+                    { id: "3.8.1.2", title: "複曲線每一圓曲線段最短長度" },
+                    { id: "3.9.1", title: "車輛尺寸係數" },
+                    { id: "3.9.2", title: "車道加寬對照表（單一車道寬=3.0M）" },
+                    { id: "3.9.3", title: "車道加寬對照表（單一車道寬=3.25M）" },
+                    { id: "3.9.4", title: "車道加寬對照表（單一車道寬=3.50M）" },
+                    { id: "3.9.5", title: "車道加寬對照表（單一車道寬=3.65M）" },
+                    { id: "3.10.2", title: "最大縱坡度" },
+                    { id: "3.10.3.3", title: "縱坡長度限制" },
+                    { id: "3.12", title: "合成坡度" },
+                    { id: "3.13", title: "豎曲線最短長度" }
+                ]
+            },
+            {
+                name: "第四章 交叉處與交流道",
+                items: [
+                    { id: "4.2.9.1", title: "轉向彎道最小超高率" },
+                    { id: "4.2.9.2", title: "轉向彎道圓曲線最短長度" },
+                    { id: "4.2.9.3", title: "轉向彎道分匯流區橫向坡差" },
+                    { id: "4.2.9.4", title: "轉向彎道設計交通狀況" },
+                    { id: "4.2.9.5", title: "轉向彎道最小全寬" },
+                    { id: "4.2.10.1", title: "減速車道寬度漸變比例" },
+                    { id: "4.2.10.2", title: "最短減速長度" },
+                    { id: "4.2.12.1", title: "環形交叉設計速率" },
+                    { id: "4.3.2.1", title: "立體交叉分匯流主線最大縱坡度" },
+                    { id: "4.3.6.1", title: "匝道縱坡度" },
+                    { id: "4.3.8.1", title: "減速長度" },
+                    { id: "4.3.8.4", title: "加速長度" },
+                    { id: "4.3.9", title: "連續匝道鼻端最小距離" }
+                ]
+            }
         ];
 
-        // --- 基礎導航與搜尋 ---
+        // --- 介面渲染與導航 ---
         function renderAccordion(searchTerm = "") {
             const container = document.getElementById('accordion-container');
             const noResults = document.getElementById('no-results');
             const isSearching = searchTerm.trim() !== "";
-            let total = 0;
+            let totalMatchCount = 0;
 
             const html = sections.map(section => {
-                const items = section.items.filter(i => i.id.includes(searchTerm) || i.title.toLowerCase().includes(searchTerm.toLowerCase()));
-                if (items.length === 0) return "";
-                total += items.length;
-                return `<details class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm" ${isSearching ? 'open' : ''}>
-                    <summary class="flex justify-between p-5 cursor-pointer hover:bg-slate-50 transition-colors">
-                        <span class="font-bold text-slate-700">${section.name}</span>
-                        <span class="text-xs text-slate-400">${items.length} 項目</span>
-                    </summary>
-                    <div class="p-4 bg-slate-50 border-t grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        ${items.map(img => `<div onclick="navigateToImage('表/表${img.id}.png', '表 ${img.id} - ${img.title}')" class="bg-white p-3 rounded border hover:border-blue-400 cursor-pointer flex justify-between items-center group">
-                            <div class="truncate"><span class="text-blue-600 font-mono text-xs font-bold block">表 ${img.id}</span><h3 class="text-sm font-semibold truncate">${img.title}</h3></div>
-                            <svg class="w-4 h-4 text-slate-300 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2"></path></svg>
-                        </div>`).join('')}
-                    </div></details>`;
+                const filteredItems = section.items.filter(item => 
+                    item.id.includes(searchTerm) || item.title.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                if (filteredItems.length === 0) return "";
+                totalMatchCount += filteredItems.length;
+                return `
+                    <details class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm" ${isSearching ? 'open' : ''}>
+                        <summary class="flex justify-between items-center p-5 cursor-pointer hover:bg-slate-50">
+                            <span class="text-lg font-bold text-slate-700">${section.name}</span>
+                            <span class="text-xs text-slate-400 font-medium">${filteredItems.length} 項目</span>
+                        </summary>
+                        <div class="p-4 bg-slate-50 border-t grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            ${filteredItems.map(img => `
+                                <div onclick="navigateToImage('表/表${img.id}.png', '表 ${img.id} - ${img.title}')" 
+                                     class="bg-white p-3 rounded-md border shadow-sm hover:border-blue-400 cursor-pointer flex justify-between items-center group">
+                                    <div class="truncate mr-2">
+                                        <span class="text-blue-600 font-mono text-xs font-bold block mb-0.5">表 ${img.id}</span>
+                                        <h3 class="text-sm font-semibold text-slate-700 truncate">${img.title}</h3>
+                                    </div>
+                                    <span class="text-slate-300 group-hover:text-blue-500">➡️</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </details>
+                `;
             }).join('');
 
             container.innerHTML = html;
-            noResults.classList.toggle('hidden', total > 0 || !isSearching);
+            noResults.classList.toggle('hidden', totalMatchCount > 0 || !isSearching);
         }
 
         function handleSearch() { renderAccordion(document.getElementById('search-input').value); }
@@ -167,7 +230,7 @@
         function updateUI(view, fileName = "", title = "") {
             const home = document.getElementById('home-view');
             const detail = document.getElementById('detail-view');
-            const back = document.getElementById('back-btn');
+            const backBtn = document.getElementById('back-btn');
             const img = document.getElementById('display-img');
             
             if (view === 'detail') {
@@ -175,12 +238,13 @@
                 document.getElementById('view-title').innerText = title;
                 home.classList.add('hidden');
                 detail.classList.remove('hidden');
-                back.classList.remove('hidden');
+                backBtn.classList.remove('hidden');
                 resetZoom();
+                window.scrollTo(0, 0);
             } else {
                 home.classList.remove('hidden');
                 detail.classList.add('hidden');
-                back.classList.add('hidden');
+                backBtn.classList.add('hidden');
             }
         }
 
@@ -191,62 +255,88 @@
 
         window.onpopstate = (e) => updateUI(e.state?.view || 'home', e.state?.fileName, e.state?.title);
 
-        // --- 核心功能：縮放、拖曳與導引線整合 ---
+        // --- 核心功能：縮放、拖曳與導引線整合 (支援觸控與滑鼠) ---
         const wrapper = document.getElementById('img-wrapper');
         const img = document.getElementById('display-img');
         const gH = document.getElementById('guide-h');
         const gV = document.getElementById('guide-v');
 
-        let scale = 1, isPanning = false, startX, startY, translateX = 0, translateY = 0, isGuideVisible = true;
+        let scale = 1, translateX = 0, translateY = 0;
+        let isPanning = false, startX, startY;
+        let evCache = []; // 快取觸控點
+        let prevDiff = -1; // 雙指距離
+        let isGuideVisible = true;
+        let longPressTimer;
 
-        // 1. 滾輪縮放 (以滑鼠位置為中心縮放需較複雜代碼，此處採中心縮放以保證穩定)
+        // 電腦版滾輪縮放
         wrapper.addEventListener('wheel', (e) => {
             e.preventDefault();
             const delta = e.deltaY > 0 ? -0.15 : 0.15;
-            scale = Math.min(Math.max(0.5, scale + delta), 5); 
+            scale = Math.min(Math.max(1, scale + delta), 6);
             updateTransform();
         }, { passive: false });
 
-        // 2. 拖曳平移
-        wrapper.addEventListener('mousedown', (e) => {
-            if (e.button !== 0) return;
+        // 指針事件統一處理 (Pointer Events)
+        wrapper.onpointerdown = (e) => {
+            evCache.push(e);
             isPanning = true;
             startX = e.clientX - translateX;
             startY = e.clientY - translateY;
-            wrapper.classList.add('grabbing');
-        });
+            wrapper.setPointerCapture(e.pointerId);
+            
+            // 長按判斷
+            longPressTimer = setTimeout(() => {
+                isGuideVisible = !isGuideVisible;
+                if(!isGuideVisible) { gH.style.display = gV.style.display = 'none'; }
+            }, 500);
+        };
 
-        window.addEventListener('mousemove', (e) => {
+        wrapper.onpointermove = (e) => {
+            const index = evCache.findIndex(c => c.pointerId === e.pointerId);
+            if (index !== -1) evCache[index] = e;
+
+            // 處理導引線位置 (與縮放平移獨立)
             const rect = wrapper.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            // 導引線更新 (限制在容器內)
             if (isGuideVisible && x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
                 gH.style.top = `${y}px`;
                 gV.style.left = `${x}px`;
-                gH.style.display = 'block';
-                gV.style.display = 'block';
+                gH.style.display = gV.style.display = 'block';
             } else {
-                gH.style.display = 'none';
-                gV.style.display = 'none';
+                gH.style.display = gV.style.display = 'none';
             }
 
-            if (!isPanning) return;
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            updateTransform();
-        });
+            // A. 雙指縮放
+            if (evCache.length === 2) {
+                clearTimeout(longPressTimer);
+                const curDiff = Math.hypot(evCache[0].clientX - evCache[1].clientX, evCache[0].clientY - evCache[1].clientY);
+                if (prevDiff > 0) {
+                    const diff = curDiff - prevDiff;
+                    scale = Math.min(Math.max(1, scale + diff * 0.015), 6);
+                }
+                prevDiff = curDiff;
+                updateTransform();
+            } 
+            // B. 單指/滑鼠平移
+            else if (isPanning) {
+                if (Math.abs(e.clientX - (startX + translateX)) > 10) clearTimeout(longPressTimer);
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateTransform();
+            }
+        };
 
-        window.addEventListener('mouseup', () => {
-            isPanning = false;
-            wrapper.classList.remove('grabbing');
-        });
+        wrapper.onpointerup = wrapper.onpointerleave = (e) => {
+            clearTimeout(longPressTimer);
+            evCache = evCache.filter(c => c.pointerId !== e.pointerId);
+            if (evCache.length < 2) prevDiff = -1;
+            if (evCache.length === 0) isPanning = false;
+        };
 
-        // 3. 功能開關
-        wrapper.addEventListener('dblclick', () => {
-            isGuideVisible = !isGuideVisible;
-        });
+        // 電腦版雙擊切換
+        wrapper.ondblclick = () => { isGuideVisible = !isGuideVisible; };
 
         function updateTransform() {
             img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
@@ -257,7 +347,7 @@
             updateTransform();
         }
 
-        // 初始化
+        // 初始化渲染
         renderAccordion();
         history.replaceState({ view: 'home' }, "");
     </script>
